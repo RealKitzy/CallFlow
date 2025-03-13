@@ -6,8 +6,8 @@
 
 typedef struct {
     char numero[15];
-    char dia[11]; // Formato: DD/MM/AAAA
-    char horario[6]; // Formato: HH:MM
+    char dia[11]; 
+    char horario[6]; 
 } Chamada;
 
 typedef struct {
