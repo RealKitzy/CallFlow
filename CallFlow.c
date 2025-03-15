@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ncurses.h>
 
 #define MAX_CHAMADAS 100
 
@@ -31,7 +32,9 @@ int filaCheia(FilaChamadas *fila) {
 
 void adicionarChamada(FilaChamadas *fila, Chamada chamada) {
     if (filaCheia(fila)) {
-        printf("Erro: Fila de chamadas cheia.\n");
+        mvprintw(LINES - 1, 0, "Erro: Fila de chamadas cheia.");
+        refresh();
+        getch();
         return;
     }
 
@@ -41,12 +44,16 @@ void adicionarChamada(FilaChamadas *fila, Chamada chamada) {
 
     fila->tras = (fila->tras + 1) % MAX_CHAMADAS;
     fila->chamadas[fila->tras] = chamada;
-    printf("Chamada adicionada com sucesso.\n");
+    mvprintw(LINES - 1, 0, "Chamada adicionada com sucesso.");
+    refresh();
+    getch();
 }
 
 void removerChamada(FilaChamadas *fila) {
     if (filaVazia(fila)) {
-        printf("Erro: Fila de chamadas vazia.\n");
+        mvprintw(LINES - 1, 0, "Erro: Fila de chamadas vazia.");
+        refresh();
+        getch();
         return;
     }
 
@@ -55,50 +62,70 @@ void removerChamada(FilaChamadas *fila) {
     } else {
         fila->frente = (fila->frente + 1) % MAX_CHAMADAS;
     }
-    printf("Chamada removida com sucesso.\n");
+    mvprintw(LINES - 1, 0, "Chamada removida com sucesso.");
+    refresh();
+    getch();
 }
 
 void listarChamadas(FilaChamadas *fila) {
     if (filaVazia(fila)) {
-        printf("Fila de chamadas vazia.\n");
+        mvprintw(LINES - 1, 0, "Fila de chamadas vazia.");
+        refresh();
+        getch();
         return;
     }
 
-    printf("Lista de chamadas:\n");
+    clear();
+    mvprintw(0, 0, "Lista de chamadas:");
+
     int i = fila->frente;
+    int linha = 2;
     do {
-        printf("Número: %s, Dia: %s, Horário: %s\n",
-               fila->chamadas[i].numero,
-               fila->chamadas[i].dia,
-               fila->chamadas[i].horario);
+        mvprintw(linha, 0, "Número: %s, Dia: %s, Horário: %s",
+                 fila->chamadas[i].numero,
+                 fila->chamadas[i].dia,
+                 fila->chamadas[i].horario);
         i = (i + 1) % MAX_CHAMADAS;
+        linha++;
     } while (i != (fila->tras + 1) % MAX_CHAMADAS);
+
+    refresh();
+    getch();
 }
 
 int main() {
     FilaChamadas fila;
     inicializarFila(&fila);
 
+    initscr(); 
+    start_color(); 
+    init_pair(1, COLOR_MAGENTA, COLOR_BLACK); 
+    bkgd(COLOR_PAIR(1)); 
+
     int opcao;
     Chamada novaChamada;
 
     do {
-        printf("\nMenu:\n");
-        printf("1. Adicionar chamada\n");
-        printf("2. Remover chamada\n");
-        printf("3. Listar chamadas\n");
-        printf("0. Sair\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
+        clear(); 
+        mvprintw(0, 0, "Sistema de Gerenciamento de Chamadas");
+        mvprintw(2, 0, "1. Adicionar chamada");
+        mvprintw(3, 0, "2. Remover chamada");
+        mvprintw(4, 0, "3. Listar chamadas");
+        mvprintw(5, 0, "0. Sair");
+        mvprintw(7, 0, "Escolha uma opção: ");
+        refresh();
+
+        opcao = getch() - '0'; 
 
         switch (opcao) {
             case 1:
-                printf("Digite o número: ");
-                scanf("%s", novaChamada.numero);
-                printf("Digite o dia (DD/MM/AAAA): ");
-                scanf("%s", novaChamada.dia);
-                printf("Digite o horário (HH:MM): ");
-                scanf("%s", novaChamada.horario);
+                clear();
+                mvprintw(0, 0, "Digite o número: ");
+                getstr(novaChamada.numero);
+                mvprintw(1, 0, "Digite o dia (DD/MM/AAAA): ");
+                getstr(novaChamada.dia);
+                mvprintw(2, 0, "Digite o horário (HH:MM): ");
+                getstr(novaChamada.horario);
                 adicionarChamada(&fila, novaChamada);
                 break;
             case 2:
@@ -108,12 +135,14 @@ int main() {
                 listarChamadas(&fila);
                 break;
             case 0:
-                printf("Saindo...\n");
                 break;
             default:
-                printf("Opção inválida.\n");
+                mvprintw(LINES - 1, 0, "Opção inválida.");
+                refresh();
+                getch();
         }
     } while (opcao != 0);
 
+    endwin(); 
     return 0;
 }
