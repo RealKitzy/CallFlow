@@ -34,6 +34,7 @@ int main() {
     init_pair(1, COLOR_MAGENTA, COLOR_BLACK);
     bkgd(COLOR_PAIR(1));
 
+    // Cores para o título "CallFlow"
     init_pair(2, COLOR_MAGENTA, COLOR_BLACK);
     init_pair(3, COLOR_RED, COLOR_BLACK);
     init_pair(4, COLOR_GREEN, COLOR_BLACK);
@@ -58,6 +59,7 @@ int main() {
             case 7: attron(COLOR_PAIR(3)); break;
         }
 
+        // Aumenta o tamanho da letra
         mvprintw(linha, coluna + i, "%c", titulo[i]);
         attroff(COLOR_PAIR(2));
         attroff(COLOR_PAIR(3));
@@ -69,9 +71,26 @@ int main() {
         usleep(200000); // Pausa de 200 milissegundos
     }
 
-    getch();
+    getch(); // Aguarda o usuário pressionar uma tecla
 
-    // ... (o restante do código permanece o mesmo)
+    int opcao;
+    Chamada novaChamada;
+
+    do {
+        clear();
+        mvprintw(0, 0, "Sistema de Gerenciamento de Chamadas");
+        mvprintw(2, 0, "1. Adicionar chamada");
+        mvprintw(3, 0, "2. Remover chamada");
+        mvprintw(4, 0, "3. Listar chamadas");
+        mvprintw(5, 0, "0. Sair");
+        mvprintw(7, 0, "Escolha uma opção: ");
+        refresh();
+
+        opcao = getch() - '0';
+
+        // ... (o switch e o restante do código permanecem os mesmos)
+
+    } while (opcao != 0);
 
     endwin();
     return 0;
