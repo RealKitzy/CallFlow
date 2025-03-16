@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ncurses.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #define MAX_CHAMADAS 100
 
@@ -29,6 +30,39 @@ int filaVazia(FilaChamadas *fila) {
 
 int filaCheia(FilaChamadas *fila) {
     return (fila->tras + 1) % MAX_CHAMADAS == fila->frente;
+}
+
+int validarData(const char *data) {
+    if (strlen(data) != 10) return 0;
+    if (!isdigit(data[0]) || !isdigit(data[1]) || data[2] != '/' ||
+        !isdigit(data[3]) || !isdigit(data[4]) || data[5] != '/' ||
+        !isdigit(data[6]) || !isdigit(data[7]) || !isdigit(data[8]) || !isdigit(data[9]))
+        return 0;
+
+    int dia = (data[0] - '0') * 10 + (data[1] - '0');
+    int mes = (data[3] - '0') * 10 + (data[4] - '0');
+    int ano = (data[6] - '0') * 1000 + (data[7] - '0') * 100 + (data[8] - '0') * 10 + (data[9] - '0');
+
+    if (dia < 1 || dia > 31 || mes < 1 || mes > 12) return 0;
+    if ((mes == 4 || mes == 6 || mes == 9 || mes == 11) && dia > 30) return 0;
+    if (mes == 2 && ((ano % 4 == 0 && ano % 100 != 0) || ano % 400 == 0) && dia > 29) return 0;
+    if (mes == 2 && !((ano % 4 == 0 && ano % 100 != 0) || ano % 400 == 0) && dia > 28) return 0;
+
+    return 1;
+}
+
+int validarHorario(const char *horario) {
+    if (strlen(horario) != 5) return 0;
+    if (!isdigit(horario[0]) || !isdigit(horario[1]) || horario[2] != ':' ||
+        !isdigit(horario[3]) || !isdigit(horario[4]))
+        return 0;
+
+    int hora = (horario[0] - '0') * 10 + (horario[1] - '0');
+    int minuto = (horario[3] - '0') * 10 + (horario[4] - '0');
+
+    if (hora < 0 || hora > 23 || minuto < 0 || minuto > 59) return 0;
+
+    return 1;
 }
 
 void adicionarChamada(FilaChamadas *fila, Chamada chamada) {
@@ -158,23 +192,56 @@ int main() {
             case 1:
                 clear();
                 mvprintw(0, 0, "Digite o número: ");
-                getstr(novaChamada.numero);
-                mvprintw(1, 0, "Digite o dia (DD/MM/AAAA): ");
-                getstr(novaChamada.dia);
-                mvprintw(2, 0, "Digite o horário (HH:MM): ");
-                getstr(novaChamada.horario);
+                getstr(
+                    novaChamada.numero);
+
+                while (1) {
+                    mvprintw(1, 0, "Digite o dia (DD/MM/AAAA): ");
+                    getstr(novaChamada.dia);
+                    if (validarData(novaChamada.dia)) {
+                        break;
+                    } else {
+                        mvprintw(LINES - 1, 0, "Formato de data inválido. Tente novamente.");
+                        refresh();
+                        getch();
+                        clear();
+                        mvprintw(0, 0, "Digite o número: %s", novaChamada.numero);
+                    }
+                }
+
+                while (1) {
+                    mvprintw(2, 0, "Digite o horário (HH:MM): ");
+                    getstr(novaChamada.horario);
+                    if (validarHorario(novaChamada.horario)) {
+                        break;
+                    } else {
+                        mvprintw(LINES - 1, 0, "Formato de horário inválido. Tente novamente.");
+                        refresh();
+                        getch();
+                        clear();
+                        mvprintw(0, 0, "Digite o número: %s", novaChamada.numero);
+                        mvprintw(1, 0, "Digite o dia (DD/MM/AAAA): %s", novaChamada.dia);
+                    }
+                }
+
                 adicionarChamada(&fila, novaChamada);
                 break;
+
             case 2:
                 removerChamada(&fila);
                 break;
+
             case 3:
                 listarChamadas(&fila);
                 break;
+
             case 0:
+                mvprintw(LINES - 1, 0, "Saindo do programa...");
+                refresh();
                 break;
+
             default:
-                mvprintw(LINES - 1, 0, "Opção inválida.");
+                mvprintw(LINES - 1, 0, "Opção inválida. Tente novamente.");
                 refresh();
                 getch();
         }
