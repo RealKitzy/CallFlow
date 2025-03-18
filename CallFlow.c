@@ -4,6 +4,7 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <time.h> // Adicionado para usar funções de data e hora
 
 #define MAX_CHAMADAS 100
 
@@ -48,6 +49,19 @@ int validarData(const char *data) {
     if (mes == 2 && ((ano % 4 == 0 && ano % 100 != 0) || ano % 400 == 0) && dia > 29) return 0;
     if (mes == 2 && !((ano % 4 == 0 && ano % 100 != 0) || ano % 400 == 0) && dia > 28) return 0;
 
+    // Obter data atual
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    int diaAtual = tm.tm_mday;
+    int mesAtual = tm.tm_mon + 1; // tm_mon é baseado em 0 (janeiro = 0)
+    int anoAtual = tm.tm_year + 1900; // tm_year é baseado em 1900
+
+    // Comparar com a data atual
+    if (ano < anoAtual) return 0;
+    if (ano == anoAtual && mes < mesAtual) return 0;
+    if (ano == anoAtual && mes == mesAtual && dia < diaAtual) return 0;
+
     return 1;
 }
 
@@ -67,7 +81,7 @@ int validarHorario(const char *horario) {
 
 void adicionarChamada(FilaChamadas *fila, Chamada chamada) {
     if (filaCheia(fila)) {
-        mvprintw(LINES - 1, 0, "Erro: Fila de chamadas cheia.");
+        mvprintw(LINES - 2, 0, "Erro: Fila de chamadas cheia.");
         refresh();
         getch();
         return;
@@ -79,14 +93,14 @@ void adicionarChamada(FilaChamadas *fila, Chamada chamada) {
 
     fila->tras = (fila->tras + 1) % MAX_CHAMADAS;
     fila->chamadas[fila->tras] = chamada;
-    mvprintw(LINES - 1, 0, "Chamada adicionada com sucesso.");
+    mvprintw(LINES - 2, 0, "Chamada adicionada com sucesso.");
     refresh();
     getch();
 }
 
 void removerChamada(FilaChamadas *fila) {
     if (filaVazia(fila)) {
-        mvprintw(LINES - 1, 0, "Erro: Fila de chamadas vazia.");
+        mvprintw(LINES - 2, 0, "Erro: Fila de chamadas vazia.");
         refresh();
         getch();
         return;
@@ -97,14 +111,14 @@ void removerChamada(FilaChamadas *fila) {
     } else {
         fila->frente = (fila->frente + 1) % MAX_CHAMADAS;
     }
-    mvprintw(LINES - 1, 0, "Chamada removida com sucesso.");
+    mvprintw(LINES - 2, 0, "Chamada removida com sucesso.");
     refresh();
     getch();
 }
 
 void listarChamadas(FilaChamadas *fila) {
     if (filaVazia(fila)) {
-        mvprintw(LINES - 1, 0, "Fila de chamadas vazia.");
+        mvprintw(LINES - 2, 0, "Fila de chamadas vazia.");
         refresh();
         getch();
         return;
@@ -178,7 +192,7 @@ int main() {
 
     do {
         clear();
-        mvprintw(0, 0, "Sistema de Gerenciamento de Chamadas");
+        mvprintw(0,0, "Sistema de Gerenciamento de Chamadas");
         mvprintw(2, 0, "1. Adicionar chamada");
         mvprintw(3, 0, "2. Remover chamada");
         mvprintw(4, 0, "3. Listar chamadas");
@@ -192,8 +206,7 @@ int main() {
             case 1:
                 clear();
                 mvprintw(0, 0, "Digite o número: ");
-                getstr(
-                    novaChamada.numero);
+                getstr(novaChamada.numero);
 
                 while (1) {
                     mvprintw(1, 0, "Digite o dia (DD/MM/AAAA): ");
@@ -201,7 +214,7 @@ int main() {
                     if (validarData(novaChamada.dia)) {
                         break;
                     } else {
-                        mvprintw(LINES - 1, 0, "Formato de data inválido. Tente novamente.");
+                        mvprintw(LINES - 2, 0, "Formato de data inválido. Tente novamente.");
                         refresh();
                         getch();
                         clear();
@@ -215,7 +228,7 @@ int main() {
                     if (validarHorario(novaChamada.horario)) {
                         break;
                     } else {
-                        mvprintw(LINES - 1, 0, "Formato de horário inválido. Tente novamente.");
+                        mvprintw(LINES - 2, 0, "Formato de horário inválido. Tente novamente.");
                         refresh();
                         getch();
                         clear();
@@ -236,12 +249,12 @@ int main() {
                 break;
 
             case 0:
-                mvprintw(LINES - 1, 0, "Saindo do programa...");
+                mvprintw(LINES - 2, 0, "Saindo do programa...");
                 refresh();
                 break;
 
             default:
-                mvprintw(LINES - 1, 0, "Opção inválida. Tente novamente.");
+                mvprintw(LINES - 2, 0, "Opção inválida. Tente novamente.");
                 refresh();
                 getch();
         }
