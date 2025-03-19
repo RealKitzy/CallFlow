@@ -4,7 +4,7 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <ctype.h>
-#include <time.h> // Adicionado para usar funções de data e hora
+#include <time.h>
 
 #define MAX_CHAMADAS 100
 
@@ -49,15 +49,13 @@ int validarData(const char *data) {
     if (mes == 2 && ((ano % 4 == 0 && ano % 100 != 0) || ano % 400 == 0) && dia > 29) return 0;
     if (mes == 2 && !((ano % 4 == 0 && ano % 100 != 0) || ano % 400 == 0) && dia > 28) return 0;
 
-    // Obter data atual
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
 
     int diaAtual = tm.tm_mday;
-    int mesAtual = tm.tm_mon + 1; // tm_mon é baseado em 0 (janeiro = 0)
-    int anoAtual = tm.tm_year + 1900; // tm_year é baseado em 1900
+    int mesAtual = tm.tm_mon + 1;
+    int anoAtual = tm.tm_year + 1900;
 
-    // Comparar com a data atual
     if (ano < anoAtual) return 0;
     if (ano == anoAtual && mes < mesAtual) return 0;
     if (ano == anoAtual && mes == mesAtual && dia < diaAtual) return 0;
@@ -98,19 +96,65 @@ void adicionarChamada(FilaChamadas *fila, Chamada chamada) {
     getch();
 }
 
-void removerChamada(FilaChamadas *fila) {
+int selecionarChamada(FilaChamadas *fila) {
     if (filaVazia(fila)) {
-        mvprintw(LINES - 2, 0, "Erro: Fila de chamadas vazia.");
+        return -1;
+    }
+
+    clear();
+    mvprintw(0, 0, "Selecione a chamada para remover:");
+
+    int i = fila->frente;
+    int linha = 2;
+    int selecao;
+
+    do {
+        mvprintw(linha, 0, "%d. Número: %s, Dia: %s, Horário: %s",
+                 linha - 1, fila->chamadas[i].numero,
+                 fila->chamadas[i].dia,
+                 fila->chamadas[i].horario);
+        i = (i + 1) % MAX_CHAMADAS;
+        linha++;
+    } while (i != (fila->tras + 1) % MAX_CHAMADAS);
+
+    mvprintw(linha, 0, "Digite o número da chamada: ");
+    refresh();
+    scanw("%d", &selecao);
+
+    if (selecao >= 0 && selecao < linha - 2) {
+        return selecao;
+    } else {
+        return -1;
+    }
+}
+
+void removerChamada(FilaChamadas *fila) {
+    int selecao = selecionarChamada(fila);
+
+    if (selecao == -1) {
+        mvprintw(LINES - 2, 0, "Seleção inválida ou fila vazia.");
         refresh();
         getch();
         return;
     }
 
+    int indice = (fila->frente + selecao) % MAX_CHAMADAS;
+
     if (fila->frente == fila->tras) {
         inicializarFila(fila);
-    } else {
+    } else if (indice == fila->frente) {
         fila->frente = (fila->frente + 1) % MAX_CHAMADAS;
+    } else if (indice == fila->tras) {
+        fila->tras = (fila->tras - 1 + MAX_CHAMADAS) % MAX_CHAMADAS;
+    } else {
+        int i = indice;
+        while (i != fila->tras) {
+            fila->chamadas[i] = fila->chamadas[(i + 1) % MAX_CHAMADAS];
+            i = (i + 1) % MAX_CHAMADAS;
+        }
+        fila->tras = (fila->tras - 1 + MAX_CHAMADAS) % MAX_CHAMADAS;
     }
+
     mvprintw(LINES - 2, 0, "Chamada removida com sucesso.");
     refresh();
     getch();
@@ -153,7 +197,6 @@ int main() {
 
     init_pair(2, COLOR_MAGENTA, COLOR_BLACK);
     init_pair(3, COLOR_RED, COLOR_BLACK);
-    init_pair(4, COLOR_GREEN, COLOR_BLACK);
     init_pair(5, COLOR_CYAN, COLOR_BLACK);
     init_pair(6, COLOR_YELLOW, COLOR_BLACK);
     init_pair(7, COLOR_BLUE, COLOR_BLACK);
@@ -192,7 +235,7 @@ int main() {
 
     do {
         clear();
-        mvprintw(0,0, "Sistema de Gerenciamento de Chamadas");
+        mvprintw(0, 0, "Sistema de Gerenciamento de Chamadas");
         mvprintw(2, 0, "1. Adicionar chamada");
         mvprintw(3, 0, "2. Remover chamada");
         mvprintw(4, 0, "3. Listar chamadas");
