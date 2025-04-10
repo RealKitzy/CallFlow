@@ -10,6 +10,7 @@
 
 typedef struct {
     char numero[15];
+    char nome[50]; 
     char dia[11];
     char horario[6];
 } Chamada;
@@ -109,8 +110,10 @@ int selecionarChamada(FilaChamadas *fila) {
     int selecao;
 
     do {
-        mvprintw(linha, 0, "%d. Número: %s, Dia: %s, Horário: %s",
-                 linha - 1, fila->chamadas[i].numero,
+        mvprintw(linha, 0, "%d. Nome: %s, Número: %s, Dia: %s, Horário: %s",
+                 linha - 1,
+                 fila->chamadas[i].nome,
+                 fila->chamadas[i].numero,
                  fila->chamadas[i].dia,
                  fila->chamadas[i].horario);
         i = (i + 1) % MAX_CHAMADAS;
@@ -174,7 +177,8 @@ void listarChamadas(FilaChamadas *fila) {
     int i = fila->frente;
     int linha = 2;
     do {
-        mvprintw(linha, 0, "Número: %s, Dia: %s, Horário: %s",
+        mvprintw(linha, 0, "Nome: %s, Número: %s, Dia: %s, Horário: %s",
+                 fila->chamadas[i].nome,
                  fila->chamadas[i].numero,
                  fila->chamadas[i].dia,
                  fila->chamadas[i].horario);
@@ -251,8 +255,11 @@ int main() {
                 mvprintw(0, 0, "Digite o número: ");
                 getstr(novaChamada.numero);
 
+                mvprintw(1, 0, "Digite o nome: "); 
+                getstr(novaChamada.nome);
+
                 while (1) {
-                    mvprintw(1, 0, "Digite o dia (DD/MM/AAAA): ");
+                    mvprintw(2, 0, "Digite o dia (DD/MM/AAAA): ");
                     getstr(novaChamada.dia);
                     if (validarData(novaChamada.dia)) {
                         break;
@@ -262,11 +269,12 @@ int main() {
                         getch();
                         clear();
                         mvprintw(0, 0, "Digite o número: %s", novaChamada.numero);
+                        mvprintw(1, 0, "Digite o nome: %s", novaChamada.nome);
                     }
                 }
 
                 while (1) {
-                    mvprintw(2, 0, "Digite o horário (HH:MM): ");
+                    mvprintw(3, 0, "Digite o horário (HH:MM): ");
                     getstr(novaChamada.horario);
                     if (validarHorario(novaChamada.horario)) {
                         break;
@@ -276,7 +284,8 @@ int main() {
                         getch();
                         clear();
                         mvprintw(0, 0, "Digite o número: %s", novaChamada.numero);
-                        mvprintw(1, 0, "Digite o dia (DD/MM/AAAA): %s", novaChamada.dia);
+                        mvprintw(1, 0, "Digite o nome: %s", novaChamada.nome);
+                        mvprintw(2, 0, "Digite o dia (DD/MM/AAAA): %s", novaChamada.dia);
                     }
                 }
 
