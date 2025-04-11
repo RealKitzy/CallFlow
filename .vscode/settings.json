@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "*.embeddedhtml": "html",
-        "Visual.C": "cpp",
-        "Visu.C": "cpp"
-    }
-}

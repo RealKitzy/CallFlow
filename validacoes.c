@@ -7,7 +7,7 @@
 
 int validarData(const char *data) {
     if (strlen(data) != 10) return 0;
-    if (data[2] != '/'  data[5] != '/') return 0;
+    if (data[2] != '/' || data[5] != '/') return 0;
 
     char diaStr[3], mesStr[3], anoStr[5];
     strncpy(diaStr, data, 2);
@@ -21,10 +21,10 @@ int validarData(const char *data) {
     int mes = atoi(mesStr);
     int ano = atoi(anoStr);
 
-    if (dia <= 0  mes <= 0  ano <= 0  mes > 12  dia > 31) return 0;
+    if (dia <= 0 || mes <= 0 || ano <= 0 || mes > 12 || dia > 31) return 0;
 
     int diasNoMes[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    if ((ano % 4 == 0 && ano % 100 != 0)  (ano % 400 == 0)) {
+    if ((ano % 4 == 0 && ano % 100 != 0) || (ano % 400 == 0)) {
         diasNoMes[1] = 29;
     }
     if (dia > diasNoMes[mes - 1]) return 0;
@@ -44,7 +44,7 @@ int validarData(const char *data) {
 }
 
 int validarHorario(const char *horario) {
-    if (strlen(horario) != 5  horario[2] != ':') return 0;
+    if (strlen(horario) != 5 || horario[2] != ':') return 0;
 
     char horaStr[3], minutoStr[3];
     strncpy(horaStr, horario, 2);
@@ -55,7 +55,7 @@ int validarHorario(const char *horario) {
     int hora = atoi(horaStr);
     int minuto = atoi(minutoStr);
 
-    if (hora < 0  hora > 23  minuto < 0  minuto > 59) return 0;
+    if (hora < 0 || hora > 23 || minuto < 0 || minuto > 59) return 0;
 
     return 1;
 }
