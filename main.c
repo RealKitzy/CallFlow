@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <ncurses.h>
 #include <string.h>
 #include "fila.h"
@@ -28,7 +31,7 @@ int main() {
     int linha = LINES / 2 - 1;
     int coluna = COLS / 2 - strlen(titulo) / 2;
 
-    for (int i = 0; i < strlen(titulo); i++) {
+    for (size_t i = 0; i < strlen(titulo); i++) {
         attron(COLOR_PAIR((i % 5) + 1));
         mvprintw(linha, coluna + i, "%c", titulo[i]);
         attroff(COLOR_PAIR((i % 5) + 1));
